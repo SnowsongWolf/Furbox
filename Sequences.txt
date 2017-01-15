@@ -1,0 +1,21 @@
+Reaction:
+Quick rise (frustrated) - fast full open.
+Peek 1 - slow peek up, medium pause, slow full open.
+Peek 2 (frustrated) - slow peek, medium pause, fast close, short pause, fast full open.
+Rumble (frustrated) - rumbling box lid, fast full open.
+Door slam (frustrated) - rapid fast peek and close, fast full open.
+Open 1 - medium full open, medium pause.
+Peek 3 - slow peek, medium pause, no full open.
+
+Action:
+Slow paw 1 - slowly extend paw, flip switch.
+Slow paw 2 - slowly extend paw, medium pause, flip switch.
+Flip 1 - medium extend, flip switch.
+Bat away (frustrated) - fast "bat away" of hand, medium pause, flip switch.
+Flip 2 - medium extend, medium pause, flip switch.
+
+Reset:
+Fast down - fast retract paw, fast lower.
+
+
+Peek:
