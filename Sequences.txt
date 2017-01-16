@@ -6,6 +6,7 @@ Rumble (frustrated) - rumbling box lid, fast full open.
 Door slam (frustrated) - rapid fast peek and close, fast full open.
 Open 1 - medium full open, medium pause.
 Peek 3 - slow peek, medium pause, no full open.
+Peek 4 - fast peek, medium pause, fast open
 
 Action:
 Slow paw 1 - slowly extend paw, flip switch.
@@ -16,6 +17,14 @@ Flip 2 - medium extend, medium pause, flip switch.
 
 Reset:
 Fast down - fast retract paw, fast lower.
-
+Slow down 1 - slow retract, slow lower to peek, medium pause, slow close
+Slow down 2 - fast retract, slow lower to peek, medium pause, fast close
+Hold again - slow retract, fast press button, medium pause, slow retract, slow lower to peek, small pause, fast close
+Ouch paw - fast close, fast open, wave paw, slo/w retract, slow close
+Wave - slow wave paw, slow retract, slow clos/e
 
 Peek:
+Peek 1 - fast peek, medium pause, slow close
+Hold - fast peek, fast turn off switch, medium pause, fast retract, fast close
+Doube peek - fast peek, slow close, fast peek, medium pause, fast close
+
