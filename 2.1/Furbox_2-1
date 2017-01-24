@@ -1,0 +1,235 @@
+#include <Servo.h>
+#include "ServoEaser.h"
+#include <Adafruit_NeoPixel.h>
+#include <Button.h>
+#include "sequences.h"
+
+#define PAW 9
+#define LID 10
+#define LAMP 11
+#define LSWITCH 12
+
+#define PAWHIGH 130
+#define PAWLOW 6
+#define PAWTOUCH 20
+
+#define LIDHIGH 100
+#define LIDLOW 6
+#define LIDPEEK 46
+
+const static int S_IDLE = 0;
+const static int S_REACT = 1;
+const static int S_ACT = 2;
+const static int S_RESET = 3;
+const static int S_PEEK = 4;
+
+int servoFrameMillis = 20;
+
+Servo srvPaw;
+ServoEaser srvPawEaser;
+
+Servo srvLid;
+ServoEaser srvLidEaser;
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(1,LAMP,NEO_GRB + NEO_KHZ800);
+
+Button lswitch = Button(LSWITCH, BUTTON_PULLUP_INTERNAL, true, 50);
+
+bool bState = false;
+bool bChange = false;
+int animState = S_IDLE;
+
+void onPress(Button& b) {
+  bState = true;
+}
+
+void onRelease(Button& b) {
+  bState = false;
+}
+
+/*void advanceSequence(int curPos, int mIndex) {
+  animState ++;
+  if (animState > 4)
+    animState = 0;
+  switch (animState)
+  {
+    case 0:
+      srvPawEaser.stop();
+      srvLidEaser.stop();
+      break;
+
+    case 1:
+      srvLidEaser.play(reac1, reac1count, 1);
+      srvLidEaser.start();
+      srvLidEaser.setArrivedFunc(advanceSequence);
+      break;
+
+    case 2:
+      srvPawEaser.play(act1, act1count, 1);
+      srvPawEaser.start();
+      srvLidEaser.setArrivedFunc(nullSequence);
+      break;
+
+    case 3:
+      srvPawEaser.play(reset1paw, reset1count, 1);
+      srvLidEaser.play(reset1lid, reset1count, 1);
+      break;
+
+    case 4:
+      animState = 0;
+      break;
+  };
+  
+}*/
+
+/*void nullSequence(int curPos, int mIndex) {
+  
+}*/
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  srvPaw.attach(PAW);
+  srvLid.attach(LID);
+
+  pinMode(LSWITCH, INPUT_PULLUP);
+
+  srvPaw.write(PAWHIGH);
+  srvLid.write(LIDLOW);
+
+  srvPawEaser.begin(srvPaw, servoFrameMillis);
+  //srvPawEaser.play(myPawMoves,myPawMovesCount);
+
+  srvLidEaser.begin(srvLid, servoFrameMillis);
+  //srvLidEaser.play(myLidMoves,myLidMovesCount);
+
+  lswitch.pressHandler(onPress);
+  lswitch.releaseHandler(onRelease);
+
+  //srvPawEaser.setArrivedFunc(advanceSequence);
+  //srvLidEaser.setArrivedFunc(advanceSequence);
+  srvPawEaser.setEasingFunc(linearTween);
+  srvLidEaser.setEasingFunc(linearTween);
+
+  strip.begin();
+  randomSeed(analogRead(0));
+}
+
+float linearTween (float t, float b, float c, float d) {
+  return c*t/d + b;
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  
+  lswitch.process();
+  sequenceUpdate();
+  strip.show();
+  srvPawEaser.update();
+  srvLidEaser.update();
+  Serial.print("Paw Running: ");
+  Serial.print(srvPawEaser.isRunning());
+  Serial.print(" | Lid Running: ");
+  Serial.println(srvLidEaser.isRunning());
+}
+
+void sequenceUpdate() {
+  //check status of animations
+  if (animState > S_IDLE && !srvPawEaser.isRunning() && !srvLidEaser.isRunning()) {   // If an animation finished
+    animState ++;               // Advance animation state
+    bChange = true;             // Make sure later code knows the animation has changed
+    
+    if (animState > S_PEEK) 
+      animState = S_IDLE;       // If the last animation chain finished, set to idle  
+  }
+
+  // check status of b flag
+  if (bState) {                 // If the light switch is on
+    strip.setPixelColor(0,strip.Color(255,255,127));      // Set light color to warm white
+    
+    if (animState == S_IDLE || animState > S_ACT) {
+      animState = S_REACT;      // If the switch is on at idle or after Action phase, start/restart animation chain
+      bChange = true;
+    }
+  }else {
+    strip.setPixelColor(0,strip.Color(0,0,0));            // set light color to black (off)
+
+    if (animState < S_ACT && animState != S_IDLE) {
+      animState = S_RESET;      // If the switch is off before the Action phase and the box isn't idle, jump to reset phase
+      bChange = true;
+    }
+  }
+
+  // Update animation phase if necessary
+  if (bChange) {
+    bChange = false;
+    switch (animState) {
+      
+      case S_IDLE:
+        srvPawEaser.stop();
+        srvLidEaser.stop();
+        break;
+
+      case S_REACT:
+        srvLidEaser.start();
+        switch (random(2)) {
+          case 0:
+            srvLidEaser.play(reac1, reac1count, 1);
+            break;
+
+          case 1:
+            srvLidEaser.play(reac2, reac2count, 1);
+            break;
+        }
+        break;
+
+      case S_ACT:
+        srvPawEaser.start();
+        switch (random(2)) {
+          case 0:
+            srvPawEaser.play(act1, act1count, 1);
+            break;
+
+          case 1:
+            srvPawEaser.play(act2, act2count, 1);
+            break;
+        }
+        break;
+
+      case S_RESET:
+        srvPawEaser.start();
+        srvLidEaser.start();
+        switch (random(2)) {
+          case 0:
+            srvPawEaser.play(reset1paw, reset1count, 1);
+            srvLidEaser.play(reset1lid, reset1count, 1);
+            break;
+
+          case 1:
+            srvPawEaser.play(reset2paw, reset2count, 1);
+            srvLidEaser.play(reset2lid, reset2count, 1);
+            break;
+        }
+        break;
+
+      case S_PEEK:
+        if (random(10) == 1) {
+          srvLidEaser.start();
+          switch (random(2)) {
+            case 0:
+              srvLidEaser.play(peek1, peek1count, 1);
+              break;
+
+            case 1:
+              srvLidEaser.play(peek2, peek2count, 1);
+              break;
+          }
+        }else
+        {
+          bChange = true;
+          animState = S_IDLE;
+        }
+        
+    }
+  }
+}
